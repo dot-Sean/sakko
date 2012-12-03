@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ -n "$( ifconfig | grep 'Bcast' )" ]
+then
+  if [ -n "$( iwconfig wlan0 | grep Number63 )" ]
+  then
+    ssh jeebus@manuel;
+  else
+    if [ -n "$( ping -c 1 4.2.2.1 | grep '1 received' )" ]
+    then
+      ssh -p 26101 jeebus@manrmt;
+    fi
+  fi
+fi
+
+exit;

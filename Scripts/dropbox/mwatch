@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# mwatch
+
+matcher=".*";
+
+mplayerarg="";
+screenarg=" -m";
+
+currdir=`pwd`;
+patharg=$currdir;
+usefile=0;
+
+
+pkill xscreensaver;
+
+
+while getopts :a:d:f:g:ilLp:qrsv:x opt; do
+
+    case $opt in
+
+        a)
+            mplayerarg="$mplayerarg -aid $OPTARG";;
+        d)
+            patharg=$OPTARG;;
+        f)
+            patharg=$OPTARG;
+            usefile=1;;
+        g)
+            matcher=$OPTARG;;
+        i)
+            screenarg="$screenarg -d";;
+        l)
+            mplayerarg="$mplayerarg -cache 16384 -cache-min 50";;
+        L)
+            mplayerarg="$mplayerarg -noidx -cache 16384 -cache-min 50";;
+        p)
+            patharg="-playlist $OPTARG";
+            usefile=2;;
+        q)
+            mplayerarg="$mplayerarg -really-quiet";;
+        r)
+            screen -dr shuf;
+            exit 0;;
+        s)
+            mplayerarg="$mplayerarg -shuffle";;
+        v)
+            mplayerarg="$mplayerarg -volume $OPTARG";;
+        x)
+            screen -r shuf -X quit;
+            exit 0;;
+        \?)
+            echo "unrecognised option -$OPTARG";
+            echo "options:";
+            echo "         -a <stream>  play each file with the given audio stream";
+            echo "         -d <dir>     directory from which to search for files";
+            echo "         -f <file>    file to play";
+            echo "         -g <regex>   pattern files must match";
+            echo "         -i           start with screen detached";
+            echo "         -l           run with a cache";
+            echo "         -L           run with a cache and no index";
+            echo "         -q           run mplayer with minimal output";
+            echo "         -r           reattach to a running instance";
+            echo "         -s           shuffle the playlist";
+            echo "         -v <volume>  start each file with a set volume";
+            echo "         -x           terminate a running instance";
+            exit 1;;
+    esac
+done
+
+
+if [ $usefile -eq 0 ]; then
+
+    cd "$patharg";
+
+    find -L -type f | egrep "\.(avi|mkv|mp4|m4v|mpg|rcv|mp3)" | egrep -i "$matcher" | sort > .mwatch-playlist;
+
+    screen -S shuf$screenarg mplayer$mplayerarg -display :0.0 -geometry +1920+0 -fs -stop-xscreensaver -playlist .mwatch-playlist;
+
+else
+
+    screen -S shuf$screenarg mplayer$mplayerarg -display :0.0 -geometry +1920+0 -fs -stop-xscreensaver "$patharg";
+
+fi
+
+
+exit 0;

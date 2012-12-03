@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [ -z "$1" ];
+then
+  time="2h"
+else
+  time="$@"
+fi
+
+#if [ "$time" -gt "9" ];
+#then
+#  time="9"
+#fi
+
+(
+ echo "  -----------------------------------------------" &&
+ echo "               \"timebomb\" activated." &&
+ echo "          Machine will shut down in $time." &&
+ echo "  -----------------------------------------------"
+) | wall;
+
+sleep "$time" && 
+
+(
+ echo "  -----------------------------------------------" &&
+ echo "                Shutting down in 30s" &&
+ echo "  -----------------------------------------------"
+) | wall &&
+
+sleep 30s &&
+
+sudo poweroff
+
+xfce4-session-logout -h

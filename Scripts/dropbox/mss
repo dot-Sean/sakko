@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ -n "$( ifconfig | grep 'Bcast' )" ]
+then
+
+  ## actions to perform when connected
+
+  if [ -n "$( iwconfig wlan0 | grep Number63 )" ]
+  then
+
+    ## actions to perform when at home
+    echo "mounting manuel as nfs"
+    sudo mount -t nfs4 -o proto=tcp,port=2049 manuel:/export/ /nfs/;
+
+  else
+    
+    if [ -n "$( ping -c 1 4.2.2.1 | grep '1 received' )" ]
+    then
+
+        ## actions to perform when away
+        echo "mounting manuel as sshfs"
+        #sshfs -p 26101 -o follow_symlinks jeebus@93.97.184.230: /nfs;
+        
+    else
+    
+        echo "on foreign network but not connected to the internet"
+    
+    fi
+
+  fi
+
+else
+
+  echo "not connected to a network"
+
+fi
+
+exit;

@@ -1,0 +1,47 @@
+#!/bin/bash
+
+if [ -n "$( ifconfig | grep 'Bcast' )" ]
+then
+  
+  echo " - connected to a network"
+
+  if [ -n "$( iwconfig wlan0 | grep Number63 )" ]
+  then
+
+    echo " - on home network"
+    
+    if [ -n "$( ping -c 1 4.2.2.1 | grep '1 received' )" ]
+    then
+  
+        echo " - connected to the internet"
+        
+    else
+    
+        echo " - not connected to the internet"
+    
+    fi
+
+  else
+
+    echo " - on foreign network"
+    
+    if [ -n "$( ping -c 1 4.2.2.1 | grep '1 received' )" ]
+    then
+  
+        echo " - connected to the internet"
+        
+    else
+    
+        echo " - not connected to the internet"
+    
+    fi
+
+  fi
+
+else
+
+  echo " - not connected to a network"
+
+fi
+
+exit;

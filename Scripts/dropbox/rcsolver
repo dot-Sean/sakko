@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "working out cause of return code $1";
+
+sleep 10s;
+
+echo "still trying to work it out...";
+
+sleep 10s;
+
+echo "right, got it";
+
+sleep 1s;
+
+echo "the problem is you, retard.";
+
+exit;
