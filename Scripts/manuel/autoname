@@ -1,0 +1,180 @@
+#!/usr/bin/perl
+
+use strict;
+
+
+my (@unconverted, @removed);
+
+my @shows = `ls`;
+
+my $dir = `pwd`;
+chomp $dir;
+
+for (@shows) 
+{
+  my $series = $_;
+  chomp $series;
+
+  my $path = "$dir/$series";
+  chdir($path) or die "Cant chdir to $path $!";
+
+  my @files = `find -type f`;
+
+  for (@files) 
+  {
+    chomp $_;
+
+    my @parts = split(/\//);
+    my $eligible = 1;
+    my $already = 0;
+    my ($rawseason, $season, $episode);
+
+    if ($_ !~ /.*(avi|mkv|mp4|m4v|mpg)/i) 
+    {
+      $eligible = 0;
+    }
+
+    if ($_ =~ /$series - s\d{2}e\d{2} - .*/i)
+    {
+      $already = 1;
+    }
+  
+    if ($parts[1] =~ /(season|series)[\.\s]?(\d+)/i) 
+    {
+      $rawseason = $2;
+      $season = $rawseason;
+      
+      if (length($season) eq 1) 
+      {
+        $season = 0 . $season;
+      }
+    } 
+    else 
+    {
+      $eligible = 0;
+    }
+    
+    if (@parts eq 2)
+    {
+      $parts[2] = $parts[1];
+    }
+
+    if ($parts[2] =~ /\D\d?$rawseason(\d{2}.*)/) 
+    {
+      $episode = $1;
+    } 
+    elsif ($parts[2] =~ /.*season.*\d{1,2}.*episode.*(\d{1,2})(.*)/i) 
+    {
+      $episode = $1;
+      my $name = $2;
+
+      if (length($episode) eq 1) 
+      {
+        $episode = 0 . $episode;
+      }
+
+      $episode = $episode . " - " . $name;
+    } 
+    elsif ($parts[2] =~ /.*episode.*(\d{1,2}).*season.*\{1,2}*(.*)/i)
+    {
+      $episode = $1;
+      my $name = $2;
+
+      if (length($episode) eq 1)
+      {
+        $episode = 0 . $episode;
+      }
+
+      $episode = $episode . " - " . $name;
+    }
+    elsif ($parts[2] =~ /.*\d{1,2}x(\d{1,2})(.*)/) 
+    {
+      $episode = $1;
+      my $name = $2;
+
+      if (length($episode) eq 1)
+      {
+        $episode = 0 . $episode;
+      }
+
+      $episode = $episode . " - " . $name;
+    }
+    elsif ($parts[2] =~ /.*\d{1,2}E(\d{1,2})(.*)/i)
+    {
+      $episode = $1;
+      my $name = $2;
+    
+      if (length($episode) eq 1)
+      {
+        $episode = 0 . $episode;
+      }
+
+      $episode = $episode . " - " . $name;
+    }
+    elsif ($parts[2] =~ /.*\d{2}(\d{2})(.*)/) 
+    {
+      $episode = $1 . " - " . $2;
+    }
+    elsif ($parts[2] =~ /.*\d{1,2}\.(\d{1,2})(.*)/)
+    {
+      $episode = $1;
+      my $name = $2;
+
+      if (length($episode) eq 1)
+      {
+        $episode = 0 . $episode;
+      }
+
+      $episode = $episode . " - " . $name;
+    }
+    else 
+    {    
+      $eligible = 0;
+    }
+
+    if ($already eq 0)
+    {
+      if ($eligible eq 1) 
+      {
+        my $newfile = "$parts[0]" . "\/" . "$parts[1]" . "\/" . "$series" . " - s" . "$season" . "e" . "$episode";
+        $newfile =~ s/([^-])(\s-\s)+([^-])/$1 - $3/g;
+
+        system("mv", "$_", "$newfile");
+      }
+      else
+      {
+        if ($_ =~ /\.(nfo|db|jpg|png)/i)
+        {
+          push(@removed, "$series/$_");
+          system("rm", "$_");
+        }
+        else
+        {
+          push(@unconverted, "$series/$_");
+        }
+      }
+    }
+  }
+}
+
+if ((@unconverted) > 0)
+{
+  print "The following filenames could not be converted:\n";
+ 
+  for (@unconverted)
+  {
+    print "$_\n";
+  }
+}
+
+if ((@removed) > 0)
+{
+  print "The following files have been removed:\n";
+
+  for (@removed)
+  {
+    print "$_\n";
+  }
+}
+
+exit 0;
